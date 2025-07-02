@@ -1,0 +1,12 @@
+.env
+EmotiEffLib
+backup/
+src/__pycache__
+src/config/__pycache__
+src/routes/__pycache__
+src/services/__pycache__
+src/middleware/__pycache__
+src/analyze_video_emotion.py
+environment.yml
+ARCHITECTURE.md
+

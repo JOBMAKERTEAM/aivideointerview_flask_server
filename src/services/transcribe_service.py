@@ -5,8 +5,10 @@ import requests
 import boto3
 import tempfile
 from botocore.exceptions import ClientError
+from config.settings import Config
 
 def transcribe_wav(video_url, language_code="ko-KR"):
+    """비디오 URL에서 음성을 인식하여 텍스트로 변환"""
     temp_webm_path = None
     temp_wav_path = None
     try:
@@ -58,7 +60,7 @@ def transcribe_wav(video_url, language_code="ko-KR"):
         }
 
         # 환경변수에서 API 키 가져오기
-        api_key = os.getenv("SPEECH_TO_TEXT_API_KEY")
+        api_key = Config.SPEECH_TO_TEXT_API_KEY
         if not api_key:
             raise Exception("SPEECH_TO_TEXT_API_KEY 환경변수가 설정되어 있지 않습니다.")
 
@@ -91,15 +93,16 @@ def transcribe_wav(video_url, language_code="ko-KR"):
         raise e
 
 def download_from_s3(s3_key):
+    """S3에서 파일 다운로드"""
     s3_client = boto3.client(
         's3',
-        aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-        aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-        region_name=os.getenv('AWS_REGION')
+        aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY,
+        region_name=Config.AWS_REGION
     )
-    bucket_name = os.getenv('AWS_S3_BUCKET')
+    bucket_name = Config.AWS_S3_BUCKET
     
-    if not all([os.getenv('AWS_ACCESS_KEY_ID'), os.getenv('AWS_SECRET_ACCESS_KEY'), bucket_name]):
+    if not all([Config.AWS_ACCESS_KEY_ID, Config.AWS_SECRET_ACCESS_KEY, bucket_name]):
         raise Exception("AWS credentials or bucket name not properly configured")
 
     # 임시 파일 생성
@@ -118,4 +121,4 @@ def download_from_s3(s3_key):
         print(f"Error downloading file from S3: {e}")
         if os.path.exists(temp_file.name):
             os.unlink(temp_file.name)
-        raise Exception(f"S3 download failed: {str(e)}")
+        raise Exception(f"S3 download failed: {str(e)}") 

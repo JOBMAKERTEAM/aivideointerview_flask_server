@@ -289,3 +289,39 @@ brew install ffmpeg
 **버전**: v1.0.0  
 **최종 업데이트**: 2024년  
 **문의**: [your-email@example.com] 
+
+## 🔄 주요 개선사항
+
+1. **관심사의 분리**: 라우터, 서비스, 설정, 미들웨어를 각각 분리
+2. **Blueprint 패턴**: Flask Blueprint를 사용한 모듈식 라우팅
+3. **애플리케이션 팩토리**: `create_app()` 함수로 앱 생성
+4. **중앙집중식 설정**: 모든 환경변수를 `config/settings.py`에서 관리
+5. **확장성**: 새로운 기능 추가가 쉬워짐
+
+## 💾 기존 파일 백업
+
+기존 파일들은 `.bak` 확장자로 백업되어 있습니다:
+- `transcribe_audio.py.bak`
+- `text_to_speech.py.bak`  
+- `analyze_video_emotion.py.bak`
+
+## 🚀 사용 방법
+
+**서버 실행:**
+```bash
+cd ai_interview/src
+python app.py
+```
+
+**새로운 기능 추가시 (예: 음성 합성 활성화):**
+```python
+# app.py에 추가
+from routes.synthesis_routes import synthesis_bp
+app.register_blueprint(synthesis_bp)
+```
+
+## 📚 추가 문서
+
+프로젝트 구조에 대한 자세한 설명은 `ai_interview/ARCHITECTURE.md` 파일에서 확인할 수 있습니다.
+
+이제 코드가 훨씬 더 체계적이고 관리하기 쉬운 구조로 변경되었습니다! 🎯 

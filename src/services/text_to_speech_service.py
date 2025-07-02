@@ -1,9 +1,9 @@
-import os
 import requests
-import base64
+from config.settings import Config
 
 def synthesize_speech(text, voice_type):
-    api_key = os.getenv("SPEECH_TO_TEXT_API_KEY")
+    """텍스트를 음성으로 변환"""
+    api_key = Config.SPEECH_TO_TEXT_API_KEY
     url = f"https://texttospeech.googleapis.com/v1/text:synthesize?key={api_key}"
     
     # voice_type이 이미 전체 이름으로 전달됨
@@ -34,4 +34,4 @@ def synthesize_speech(text, voice_type):
             raise Exception(f"Synthesis failed: {error_detail}")
             
     except requests.exceptions.RequestException as e:
-        raise Exception(f"Request failed: {str(e)}")
+        raise Exception(f"Request failed: {str(e)}") 

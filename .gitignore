@@ -9,4 +9,4 @@ src/middleware/__pycache__
 src/analyze_video_emotion.py
 environment.yml
 ARCHITECTURE.md
-
+test/

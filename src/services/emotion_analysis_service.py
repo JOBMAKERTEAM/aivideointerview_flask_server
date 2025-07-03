@@ -1,8 +1,11 @@
 import cv2
 import numpy as np
-from typing import List, Dict
+from typing import List, Dict, Optional
 from facenet_pytorch import MTCNN
 from config.settings import Config
+import base64
+from PIL import Image
+import io
 
 # EmotiEffLib 경로 설정
 Config.setup_emotiefflib_path()
@@ -26,6 +29,67 @@ def recognize_faces(frame: np.ndarray, mtcnn: MTCNN) -> List[np.ndarray]:
         x1, y1, x2, y2 = map(int, box[:4])
         facial_images.append(frame[y1:y2, x1:x2, :])
     return facial_images
+
+def analyze_image_emotion(image_data: str, device: str = "cpu") -> Optional[Dict]:
+    """이미지 기반 감정 분석
+    
+    Args:
+        image_data: base64 인코딩된 이미지 데이터
+        device: 사용할 디바이스 (cpu/cuda)
+    
+    Returns:
+        감정 분석 결과 딕셔너리 또는 None
+    """
+    try:
+        fer, mtcnn = init_models(device=device)
+        
+        # base64 디코딩
+        image_bytes = base64.b64decode(image_data)
+        image = Image.open(io.BytesIO(image_bytes))
+        
+        # PIL 이미지를 OpenCV 형식으로 변환
+        image_np = np.array(image)
+        if len(image_np.shape) == 3:
+            # RGB to BGR for OpenCV
+            if image_np.shape[2] == 3:
+                rgb_frame = image_np
+            else:
+                rgb_frame = cv2.cvtColor(image_np, cv2.COLOR_RGBA2RGB)
+        else:
+            print("❌ Invalid image format")
+            return None
+        
+        # 얼굴 감지
+        faces = recognize_faces(rgb_frame, mtcnn)
+        
+        if not faces:
+            print("⚠️ No faces detected in image")
+            return {
+                "emotion": "Neutral",
+                "confidence": 0.0,
+                "face_detected": False
+            }
+        
+        # 감정 분석 (첫 번째 얼굴만 사용)
+        emotions, scores = fer.predict_emotions([faces[0]], logits=True)
+        
+        result = {
+            "emotion": emotions[0],
+            "confidence": round(float(np.max(scores[0])), 3),
+            "face_detected": True
+        }
+        
+        print(f"✅ Image emotion analysis: {result['emotion']} (confidence: {result['confidence']})")
+        return result
+        
+    except Exception as e:
+        print(f"❌ Image emotion analysis error: {str(e)}")
+        return {
+            "emotion": "Neutral",
+            "confidence": 0.0,
+            "face_detected": False,
+            "error": str(e)
+        }
 
 def analyze_video_emotion(video_path: str, device: str = "cpu", frame_interval: int = 10) -> List[Dict]:
     """동영상 감정 분석"""

@@ -3,6 +3,7 @@ from flask_cors import CORS
 from config.settings import Config
 from middleware.auth_middleware import verify_api_key
 from routes.transcribe_routes import transcribe_bp
+from routes.analysis_routes import analysis_bp
 
 def create_app():
     """Flask 애플리케이션 팩토리 함수"""
@@ -19,6 +20,7 @@ def create_app():
     
     # Blueprint 등록
     app.register_blueprint(transcribe_bp)
+    app.register_blueprint(analysis_bp)
     
     return app
 

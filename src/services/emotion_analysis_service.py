@@ -30,6 +30,13 @@ def recognize_faces(frame: np.ndarray, mtcnn: MTCNN) -> List[np.ndarray]:
         facial_images.append(frame[y1:y2, x1:x2, :])
     return facial_images
 
+def softmax_normalize_confidence(logit_scores):
+    """logit 점수를 0-1 범위 확률로 변환"""
+    # softmax 적용하여 확률로 변환
+    exp_scores = np.exp(logit_scores - np.max(logit_scores))  # 수치적 안정성을 위해 최댓값 빼기
+    probabilities = exp_scores / np.sum(exp_scores)
+    return float(np.max(probabilities))
+
 def analyze_image_emotion(image_data: str, device: str = "cpu") -> Optional[Dict]:
     """이미지 기반 감정 분석
     
@@ -73,13 +80,16 @@ def analyze_image_emotion(image_data: str, device: str = "cpu") -> Optional[Dict
         # 감정 분석 (첫 번째 얼굴만 사용)
         emotions, scores = fer.predict_emotions([faces[0]], logits=True)
         
+        # logit 점수를 0-1 범위 확률로 변환
+        confidence = softmax_normalize_confidence(scores[0])
+        
         result = {
             "emotion": emotions[0],
-            "confidence": round(float(np.max(scores[0])), 3),
+            "confidence": round(confidence, 3),
             "face_detected": True
         }
         
-        print(f"✅ Image emotion analysis: {result['emotion']} (confidence: {result['confidence']})")
+        print(f"✅ Image emotion analysis: {result['emotion']} (confidence: {result['confidence']} = {round(confidence*100, 1)}%)")
         return result
         
     except Exception as e:
@@ -113,11 +123,15 @@ def analyze_video_emotion(video_path: str, device: str = "cpu", frame_interval: 
 
             if faces:
                 emotions, scores = fer.predict_emotions(faces, logits=True)
+                
+                # logit 점수를 0-1 범위 확률로 변환
+                confidence = softmax_normalize_confidence(scores[0])
+                
                 results.append({
                     "frame": frame_idx,
                     "time_sec": round(frame_idx / fps, 2),
                     "emotion": emotions[0],
-                    "confidence": round(float(np.max(scores[0])), 3)
+                    "confidence": round(confidence, 3)
                 })
 
         frame_idx += 1

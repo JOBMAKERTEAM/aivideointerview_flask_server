@@ -1,0 +1,36 @@
+name: Pull changes on self-hosted runner
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  git-pull:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      # 1. Checkout latest branch
+      - name: Checkout latest branch
+        uses: actions/checkout@v3
+        with:
+          ref: main  # 최신 브랜치로 체크아웃
+
+      # 2. Stop Flask Server
+      - name: Flask서버 임시 종료
+        run: |
+          pm2 stop Flask
+      # 2. Pull the latest changes
+      - name: 리포지토리 pull
+        run: |
+          cd /home/ubuntu/aivideointerview_flask_server
+          git pull
+      # 3. Install libraries
+      - name: 라이브러리 설치
+        run: |
+          cd /home/ubuntu/aivideointerview_flask_server
+          source ai_speech_env/bin/activate
+          pip install -r requirements.txt
+      # 4. Build the project
+      - name: pm2 서버 구동
+        run: |
+          pm2 restart Flask
